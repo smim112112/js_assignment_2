@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dynamic Drink App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+
+    <h2 class="text-center mb-4">Drink Finder</h2>
+
+    <!-- Search -->
+    <div class="input-group mb-4">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search drink...">
+        <button class="btn btn-primary" id="searchBtn">Search</button>
+    </div>
+
+    <div class="row">
+
+        <!-- Left Column -->
+        <div class="col-md-8">
+            <div class="row g-3" id="drinkContainer"></div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5>Group Selected Drinks</h5>
+                    <p>Total Drinks: <span id="count">0</span></p>
+                    <ul class="list-group" id="groupList"></ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="detailsModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="modalTitle"></h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImg" class="img-fluid mb-3">
+                <p id="modalInstructions"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+const drinkContainer = document.getElementById("drinkContainer");
+const groupList = document.getElementById("groupList");
+const countText = document.getElementById("count");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+
+let groupDrinks = [];
+const maxLimit = 7;
+
+// Fetch Drinks
+async function fetchDrinks(searchText="juice") {
+
+    drinkContainer.innerHTML = "<h5 class='text-center'>Loading...</h5>";
+
+    const res = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${searchText}`);
+    const data = await res.json();
+
+    displayDrinks(data.drinks);
+}
+
+// Display Drinks
+function displayDrinks(drinks) {
+
+    drinkContainer.innerHTML = "";
+
+    if (!drinks) {
+        drinkContainer.innerHTML = "<h4 class='text-center'>No drink found</h4>";
+        return;
+    }
+
+    drinks.forEach(drink => {
+
+        const shortInstruction = drink.strInstructions.slice(0,15) + "...";
+
+        const col = document.createElement("div");
+        col.className = "col-md-6";
+
+        col.innerHTML = `
+            <div class="card h-100 shadow">
+                <img src="${drink.strDrinkThumb}" class="card-img-top">
+                <div class="card-body">
+                    <h5>${drink.strDrink}</h5>
+                    <p><strong>Category:</strong> ${drink.strCategory}</p>
+                    <p>${shortInstruction}</p>
+                    <button class="btn btn-success btn-sm add-btn">Add to Group</button>
+                    <button class="btn btn-info btn-sm details-btn">Details</button>
+                </div>
+            </div>
+        `;
+
+        // Add Event Listener
+        col.querySelector(".add-btn").addEventListener("click", () => addToGroup(drink));
+        col.querySelector(".details-btn").addEventListener("click", () => showDetails(drink.idDrink));
+
+        drinkContainer.appendChild(col);
+    });
+}
+
+// Add to Group
+function addToGroup(drink) {
+
+    if (groupDrinks.length >= maxLimit) {
+        alert("You cannot add more than 7 drinks!");
+        return;
+    }
+
+    // Prevent duplicate
+    if (groupDrinks.find(d => d.idDrink === drink.idDrink)) {
+        alert("Already added!");
+        return;
+    }
+
+    groupDrinks.push(drink);
+
+    const li = document.createElement("li");
+    li.className = "list-group-item";
+    li.innerText = drink.strDrink;
+
+    groupList.appendChild(li);
+
+    countText.innerText = groupDrinks.length;
+}
+
+// Show Details
+async function showDetails(id) {
+
+    const res = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${id}`);
+    const data = await res.json();
+
+    const drink = data.drinks[0];
+
+    document.getElementById("modalTitle").innerText = drink.strDrink;
+    document.getElementById("modalImg").src = drink.strDrinkThumb;
+    document.getElementById("modalInstructions").innerText = drink.strInstructions;
+
+    new bootstrap.Modal(document.getElementById("detailsModal")).show();
+}
+
+// Search Button
+searchBtn.addEventListener("click", () => {
+    const text = searchInput.value.trim();
+    fetchDrinks(text || "juice");
+});
+
+// Enter Key Support
+searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        searchBtn.click();
+    }
+});
+
+// Default Load
+fetchDrinks();
+
+</script>
+
+</body>
+</html>
