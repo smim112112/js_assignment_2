@@ -12,7 +12,7 @@
 
     <h2 class="text-center mb-4">Drink Finder</h2>
 
-    <!-- Search -->
+
     <div class="input-group mb-4">
         <input type="text" id="searchInput" class="form-control" placeholder="Search drink...">
         <button class="btn btn-primary" id="searchBtn">Search</button>
@@ -20,12 +20,12 @@
 
     <div class="row">
 
-        <!-- Left Column -->
+       
         <div class="col-md-8">
             <div class="row g-3" id="drinkContainer"></div>
         </div>
 
-        <!-- Right Column -->
+        
         <div class="col-md-4">
             <div class="card shadow">
                 <div class="card-body">
@@ -39,7 +39,7 @@
     </div>
 </div>
 
-<!-- Modal -->
+
 <div class="modal fade" id="detailsModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -68,7 +68,7 @@ const searchBtn = document.getElementById("searchBtn");
 let groupDrinks = [];
 const maxLimit = 7;
 
-// Fetch Drinks
+
 async function fetchDrinks(searchText="juice") {
 
     drinkContainer.innerHTML = "<h5 class='text-center'>Loading...</h5>";
@@ -79,7 +79,7 @@ async function fetchDrinks(searchText="juice") {
     displayDrinks(data.drinks);
 }
 
-// Display Drinks
+
 function displayDrinks(drinks) {
 
     drinkContainer.innerHTML = "";
@@ -109,7 +109,7 @@ function displayDrinks(drinks) {
             </div>
         `;
 
-        // Add Event Listener
+       
         col.querySelector(".add-btn").addEventListener("click", () => addToGroup(drink));
         col.querySelector(".details-btn").addEventListener("click", () => showDetails(drink.idDrink));
 
@@ -117,7 +117,7 @@ function displayDrinks(drinks) {
     });
 }
 
-// Add to Group
+
 function addToGroup(drink) {
 
     if (groupDrinks.length >= maxLimit) {
@@ -125,7 +125,7 @@ function addToGroup(drink) {
         return;
     }
 
-    // Prevent duplicate
+   
     if (groupDrinks.find(d => d.idDrink === drink.idDrink)) {
         alert("Already added!");
         return;
@@ -142,7 +142,7 @@ function addToGroup(drink) {
     countText.innerText = groupDrinks.length;
 }
 
-// Show Details
+
 async function showDetails(id) {
 
     const res = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${id}`);
@@ -157,20 +157,20 @@ async function showDetails(id) {
     new bootstrap.Modal(document.getElementById("detailsModal")).show();
 }
 
-// Search Button
+
 searchBtn.addEventListener("click", () => {
     const text = searchInput.value.trim();
     fetchDrinks(text || "juice");
 });
 
-// Enter Key Support
+
 searchInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
         searchBtn.click();
     }
 });
 
-// Default Load
+
 fetchDrinks();
 
 </script>
